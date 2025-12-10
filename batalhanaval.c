@@ -22,7 +22,7 @@ void limpar_tabuleiro(char matriz[TAMANHO][TAMANHO]) {
     }
 }
 
-void desenhar_tabuleiro(char matriz[TAMANHO][TAMANHO], int esconder) {  //se for 1, os navios n„o aparecem
+void desenhar_tabuleiro(char matriz[TAMANHO][TAMANHO], int esconder) {  //se for 1, os navios n√£o aparecem
     printf("\n   1  2  3  4  5  6  7  8  9  10\n");
     for(int i=0; i < TAMANHO; i++) {
         printf("%c ", 'A' + i);                                                  //tabela ascii
@@ -130,7 +130,7 @@ void iniciar_partida() {
             printf("TURNO DE %s\n", nome1);
             printf("Seu Radar (Tabuleiro Inimigo):\n");
             desenhar_tabuleiro(tab2, 1);         //mostra o tabuleiro mas esconde os navios
-            atirar(tab2, nome1);
+            atirar(tab2, nome1);}
             if(checar_vitoria(tab2)) {
                 printf("\nPARABENS %s! VOCE GANHOU!\n", nome1);
                 jogo_ativo = 0;
@@ -200,3 +200,4 @@ int main() {
 
     return 0;
 }
+
