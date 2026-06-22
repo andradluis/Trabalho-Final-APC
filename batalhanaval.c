@@ -7,7 +7,7 @@
 char nome1[50] = "Jogador 1";
 char nome2[50] = "Jogador 2";
 void limpar_tela() {
-    system("cls"); //funcao para limpar a tela
+    system("cls");
 }
 
 void pausa() {
