@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #define TAMANHO 10
 #define COR_FUNDO "color B0"
+
 char nome1[50] = "Jogador 1";
 char nome2[50] = "Jogador 2";
+
 void limpar_tela() {
     system("cls");
 }
@@ -14,21 +17,22 @@ void pausa() {
     printf("\n(Pressione ENTER para continuar...)"); //funcao para pausar
     getchar(); getchar();
 }
+
 void limpar_tabuleiro(char matriz[TAMANHO][TAMANHO]) {
     for(int i=0; i < TAMANHO; i++) {
         for(int j=0; j < TAMANHO; j++) {
-            matriz[i][j] = '~';                          //preenche tudo com ~
+            matriz[i][j] = '~'; //preenche tudo com ~
         }
     }
 }
 
-void desenhar_tabuleiro(char matriz[TAMANHO][TAMANHO], int esconder) {  //se for 1, os navios não aparecem
+void desenhar_tabuleiro(char matriz[TAMANHO][TAMANHO], int esconder) { //se for 1, os navios não aparecem
     printf("\n   1  2  3  4  5  6  7  8  9  10\n");
     for(int i=0; i < TAMANHO; i++) {
-        printf("%c ", 'A' + i);                                                  //tabela ascii
+        printf("%c ", 'A' + i); //tabela ascii
         for(int j=0; j < TAMANHO; j++) {
-            char celula = matriz[i][j];                                             //faz as celulas ~
-            if(esconder == 1 && celula == 'N') {        //tabuleiro pro inimigo
+            char celula = matriz[i][j]; //faz as celulas ~
+            if(esconder == 1 && celula == 'N') { //tabuleiro pro inimigo
                 printf(" ~ ");
             } else {
                 printf(" %c ", celula);
@@ -37,69 +41,111 @@ void desenhar_tabuleiro(char matriz[TAMANHO][TAMANHO], int esconder) {  //se for
         printf("\n");
     }
 }
+
 void posicionar_frota(char matriz[TAMANHO][TAMANHO], char *nome_jogador) {
     int tamanho_barco = 3;
     int quantidade_barcos = 2;
+
     limpar_tela();
     printf("VEZ DE: %s (Oponente nao olhe!)\n", nome_jogador);
     pausa();
-    for(int i = 0; i < quantidade_barcos; i++) {      //roda 2 vezes
+
+    for(int i = 0; i < quantidade_barcos; i++) { //roda 2 vezes
         int navio_colocado = 0;
-        while(navio_colocado == 0) {             //while so termina quando o navio e colocado sem erro
+
+        while(navio_colocado == 0) { //while so termina quando o navio e colocado sem erro
             limpar_tela();
             printf("--- %s: POSICIONANDO BARCO %d/%d ---\n", nome_jogador, i+1, quantidade_barcos);
-            desenhar_tabuleiro(matriz, 0);                       //desenha o tabuleiro mostrando tudo
+            desenhar_tabuleiro(matriz, 0); //desenha o tabuleiro mostrando tudo
+
             printf("\nBarco de tamanho %d.\n", tamanho_barco);
+
             char ori;
             printf("1. Qual a orientacao? (H = Horizontal, V = Vertical): ");
             scanf(" %c", &ori);
             ori = toupper(ori);
+
+            //MUDANCA 3: so aceita H ou V (antes, qualquer letra virava vertical)
+            if(ori != 'H' && ori != 'V') {
+                printf("ERRO: Orientacao invalida! Use H ou V.\n"); pausa(); continue;
+            }
+
             char letra;
             int col_num;
             printf("2. Qual a coordenada inicial? (Ex: A 5): ");
             scanf(" %c %d", &letra, &col_num);
+
             int lin = toupper(letra) - 'A';
-            int col = col_num - 1;        //arruma o indice da matriz
+            int col = col_num - 1; //arruma o indice da matriz
+
             if(lin < 0 || lin >= TAMANHO || col < 0 || col >= TAMANHO) {
-                printf("ERRO: Coordenada fora do mapa!\n"); pausa(); continue;  //volta com o while
+                printf("ERRO: Coordenada fora do mapa!\n"); pausa(); continue; //volta com o while
             }
+
             if(ori == 'H') {
                 if (col + tamanho_barco > TAMANHO) {
-                    printf("ERRO: O barco sai do mapa na direita!\n"); pausa(); continue;  //volta com o while
+                    printf("ERRO: O barco sai do mapa na direita!\n"); pausa(); continue; //volta com o while
                 }
+
+                //MUDANCA 2: impede que um barco seja colocado em cima de outro
+                int ocupado = 0;
+                for(int k=0; k < tamanho_barco; k++) {
+                    if(matriz[lin][col+k] == 'N') ocupado = 1;
+                }
+                if(ocupado == 1) {
+                    printf("ERRO: Ja existe um barco nessa posicao!\n"); pausa(); continue;
+                }
+
                 for(int k=0; k < tamanho_barco; k++) matriz[lin][col+k] = 'N';
             }
             else {
                 if (lin + tamanho_barco > TAMANHO) {
                     printf("ERRO: O barco sai do mapa em baixo!\n"); pausa(); continue;
                 }
+
+                int ocupado = 0;
+                for(int k=0; k < tamanho_barco; k++) {
+                    if(matriz[lin+k][col] == 'N') ocupado = 1;
+                }
+                if(ocupado == 1) {
+                    printf("ERRO: Ja existe um barco nessa posicao!\n"); pausa(); continue;
+                }
+
                 for(int k=0; k < tamanho_barco; k++) matriz[lin+k][col] = 'N';
             }
 
-            navio_colocado = 1;  //para o while
+            navio_colocado = 1; //para o while
         }
     }
 }
+
 void atirar(char matriz_inimiga[TAMANHO][TAMANHO], char *atirador) {
-    int acertou_algo = 0;        //funcao acaba quando o jogador atira na agua ou no navio
+    int acertou_algo = 0; //funcao acaba quando o jogador atira na agua ou no navio
+
     while(acertou_algo == 0) {
         printf("\n%s, digite a coordenada do tiro (Ex: B 4): ", atirador);
+
         char letra;
         int col_num;
         scanf(" %c %d", &letra, &col_num);
+
         int lin = toupper(letra) - 'A';
-        int col = col_num - 1;           //converte indice da matriz
+        int col = col_num - 1; //converte indice da matriz
+
         if(lin < 0 || lin >= TAMANHO || col < 0 || col >= TAMANHO) {
-            printf("Coordenada invalida!\n"); continue;       //volta pro while
+            printf("Coordenada invalida!\n"); continue; //volta pro while
         }
+
+        //MUDANCA 1: faltava fechar a chave do primeiro if (o codigo nao compilava)
         if(matriz_inimiga[lin][col] == 'N') {
             printf("\n--- BUM! ACERTOU O NAVIO! ---\n");
             matriz_inimiga[lin][col] = 'X';
-            acertou_algo = 1;  //encerra o while
+            acertou_algo = 1; //encerra o while
+        }
         else if(matriz_inimiga[lin][col] == '~') {
             printf("\n--- SPLASH! AGUA! ---\n");
             matriz_inimiga[lin][col] = '*';
-            acertou_algo = 1;    //encerra o while
+            acertou_algo = 1; //encerra o while
         }
         else {
             printf("Voce ja atirou ai! Tente de novo.\n");
@@ -107,30 +153,40 @@ void atirar(char matriz_inimiga[TAMANHO][TAMANHO], char *atirador) {
     }
     pausa();
 }
+
 int checar_vitoria(char matriz[TAMANHO][TAMANHO]) {
     for(int i=0; i < TAMANHO; i++) {
         for(int j=0; j < TAMANHO; j++) {
-            if(matriz[i][j] == 'N') return 0;  //verifica se ainda tem navio
+            if(matriz[i][j] == 'N') return 0; //verifica se ainda tem navio
         }
     }
-    return 1;             //se nao tem mais navio o jogador venceu
+    return 1; //se nao tem mais navio o jogador venceu
 }
+
 void iniciar_partida() {
     char tab1[TAMANHO][TAMANHO];
     char tab2[TAMANHO][TAMANHO];
-    limpar_tabuleiro(tab1);               //preenche tudo com ~
+
+    limpar_tabuleiro(tab1); //preenche tudo com ~
     limpar_tabuleiro(tab2);
+
     posicionar_frota(tab1, nome1);
     posicionar_frota(tab2, nome2);
-    int turno = 1;                            //comeca pelo jogador 1
+
+    int turno = 1; //comeca pelo jogador 1
     int jogo_ativo = 1;
-    while(jogo_ativo == 1) {                 //repete ate o jogo desativar(alguem ganhar)
-        limpar_tela();      //limpa a tela pra nao espiar
+
+    while(jogo_ativo == 1) { //repete ate o jogo desativar(alguem ganhar)
+        limpar_tela(); //limpa a tela pra nao espiar
+
+        //MUDANCA 1: a chave que fechava o if(turno == 1) estava no lugar errado
         if(turno == 1) {
             printf("TURNO DE %s\n", nome1);
             printf("Seu Radar (Tabuleiro Inimigo):\n");
-            desenhar_tabuleiro(tab2, 1);         //mostra o tabuleiro mas esconde os navios
-            atirar(tab2, nome1);}
+            desenhar_tabuleiro(tab2, 1); //mostra o tabuleiro mas esconde os navios
+
+            atirar(tab2, nome1);
+
             if(checar_vitoria(tab2)) {
                 printf("\nPARABENS %s! VOCE GANHOU!\n", nome1);
                 jogo_ativo = 0;
@@ -140,8 +196,10 @@ void iniciar_partida() {
         else {
             printf("TURNO DE %s\n", nome2);
             printf("Seu Radar (Tabuleiro Inimigo):\n");
-            desenhar_tabuleiro(tab1, 1);     //mostra o tabuleiro mas esconde os navios
+            desenhar_tabuleiro(tab1, 1); //mostra o tabuleiro mas esconde os navios
+
             atirar(tab1, nome2);
+
             if(checar_vitoria(tab1)) {
                 printf("\nPARABENS %s! VOCE GANHOU!\n", nome2);
                 jogo_ativo = 0;
@@ -151,13 +209,15 @@ void iniciar_partida() {
     }
     pausa();
 }
+
 int main() {
     system(COR_FUNDO);
     int opcao = 0;
+
     do {
         limpar_tela();
         printf("==============================\n");
-        printf("       BATALHA NAVAL                                                            Feito por Luis Felipe   \n");
+        printf("  BATALHA NAVAL  Feito por Luis Felipe  \n");
         printf("==============================\n");
         printf(" Jogadores: %s vs %s\n", nome1, nome2);
         printf("------------------------------\n");
@@ -167,7 +227,9 @@ int main() {
         printf(" 4 - SAIR\n");
         printf("------------------------------\n");
         printf(" Escolha uma opcao: ");
+
         scanf("%d", &opcao);
+
         if(opcao == 1) {
             iniciar_partida();
         }
@@ -200,4 +262,3 @@ int main() {
 
     return 0;
 }
-
